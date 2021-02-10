@@ -1,26 +1,45 @@
-import sys
+#
 import threading
-import time
-from typing import Optional
 
-import asyncio
-import yadisk
-import json
-
-from yadisk.exceptions import PathNotFoundError
-from yadisk.objects import DiskInfoObject
-
-from src.disk_wrapper import YandexDiskWrapper, YandexDiskUploaderAbstract, YandexDiskUploaderOverwrite
+from src.cli import get_sys_arguments, GlobalStateHolder, get_files_to_upload, initialize_wrapper, \
+    compare_files_with_destination, get_progress, upload_all_files
 
 
-#
-# progress = threading.Thread(target=get_progress)
-# upload = threading.Thread(target=main_upload)
-#
-# progress.start()
-# upload.start()
-#
-# upload.join()
+def uploading_threads():
+    progress = threading.Thread(target=get_progress)
+    upload = threading.Thread(target=upload_all_files)
+
+    progress.start()
+    upload.start()
+
+    upload.join()
+    progress.join()
+
 
 if __name__ == '__main__':
-    print(sys.argv)
+    args = get_sys_arguments()
+    GlobalStateHolder.source_dir = args.source_dir
+    GlobalStateHolder.destination_dir = args.destination_dir
+
+    files_to_upload = get_files_to_upload()
+    GlobalStateHolder.files_to_upload = files_to_upload
+    GlobalStateHolder.files_to_upload_len = len(files_to_upload)
+
+    wrapper = initialize_wrapper(args.token)
+    GlobalStateHolder.disk_wrapper = wrapper
+
+    comparison = compare_files_with_destination()
+    if comparison and args.no_collision:
+        print('Cannot continue due to conflicts above')
+        exit(1)
+    elif not comparison:
+        print('No conflict files, OK')
+
+    if not args.force:
+        print('\nPress ENTER to continue:')
+        input()
+
+    uploading_threads()
+
+    print('Uploading complete')
+    exit(0)

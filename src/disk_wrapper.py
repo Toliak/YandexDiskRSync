@@ -1,11 +1,11 @@
 import abc
-import enum
 
-import yadisk
+from yadisk import YaDisk
 from yadisk.exceptions import PathNotFoundError
 from yadisk.objects import ResourceObject
 
 from src.utils import get_file_size
+from src.yandex_disk_upload import prepare_file_adapter
 
 
 class YandexDiskUploaderAbstract(metaclass=abc.ABCMeta):
@@ -18,12 +18,18 @@ class YandexDiskUploaderAbstract(metaclass=abc.ABCMeta):
     def __init__(self,
                  wrapper: 'YandexDiskWrapper',
                  source_path,
-                 dist_path, ):
+                 dist_path):
         self.wrapper = wrapper
         self.yadisk = wrapper.yadisk
 
         self.source_path = source_path
         self.dist_path = dist_path
+        self.current_percent = 0
+
+        self.percent_callback = lambda x: self.set_current_percent(x)
+
+    def set_current_percent(self, value: float):
+        self.current_percent = value
 
     @abc.abstractmethod
     def upload(self):
@@ -33,25 +39,25 @@ class YandexDiskUploaderAbstract(metaclass=abc.ABCMeta):
         return self.wrapper.get_size(self.dist_path)
 
     def get_progress(self) -> float:
-        uploaded = self.get_uploaded_size()
-        original = get_file_size(self.source_path)
-
-        return uploaded / original
+        return self.current_percent
 
 
 class YandexDiskUploaderOverwrite(YandexDiskUploaderAbstract):
     def upload(self):
-        self.yadisk.upload(self.source_path, self.dist_path, overwrite=True)
+        self.yadisk.upload(prepare_file_adapter(self.source_path, self.percent_callback),
+                           self.dist_path,
+                           overwrite=True)
 
 
 class YandexDiskUploaderWithError(YandexDiskUploaderAbstract):
     def upload(self):
-        self.yadisk.upload(self.source_path, self.dist_path)
+        self.yadisk.upload(prepare_file_adapter(self.source_path, self.percent_callback),
+                           self.dist_path)
 
 
 class YandexDiskWrapper:
     def __init__(self, **kwargs):
-        self.yadisk = yadisk.YaDisk(**kwargs)
+        self.yadisk = YaDisk(**kwargs)
 
     def mkdir_if_not_exists(self, path):
         try:
