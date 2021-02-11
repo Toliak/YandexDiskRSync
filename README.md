@@ -10,13 +10,16 @@ How to get Yandex Disk OAuth token: [Link](https://oauth.yandex.ru/authorize?res
 
 ```shell
 export YTOKEN=Your_yandex_disk_oauth_token
-docker run -it --rm -v $PWD/upload:/uploader/upload/:ro uploader $YTOKEN
+docker run -it --rm -v $PWD/upload:/uploader/upload/:ro toliak/yandex-disk-uploader $YTOKEN
 ```
+
+[DockerHub Page](https://hub.docker.com/r/toliak/yandex-disk-uploader)
 
 ## Help
 
 Help command
 
 ```shell
-docker run -it --rm uploader -h
+docker run -it --rm toliak/yandex-disk-uploader -h
 ```
+
