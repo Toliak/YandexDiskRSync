@@ -2,7 +2,7 @@ import os
 import threading
 
 from src.cli import get_sys_arguments, GlobalStateHolder, get_files_to_upload, initialize_wrapper, \
-    compare_files_with_destination, get_progress, upload_all_files
+    compare_files_with_destination, get_progress, upload_all_files, rename_all_files
 
 
 def uploading_threads():
@@ -42,6 +42,10 @@ if __name__ == '__main__':
         input()
 
     uploading_threads()
-
     print('Uploading complete')
+
+    print('Renaming archives...')
+    rename_all_files()
+    print('Complete, OK')
+
     exit(0)

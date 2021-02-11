@@ -16,6 +16,8 @@ class GlobalStateHolder:
     uploaded = 0
     files_to_upload_len = 0
 
+    files_to_rename: Dict[str, str] = dict()
+
     uploader: Optional[YandexDiskUploaderAbstract] = None
     disk_wrapper: Optional[YandexDiskWrapper] = None
 
@@ -115,9 +117,16 @@ def upload_file(filename: str):
     destination_dir = GlobalStateHolder.destination_dir
 
     wrapper.mkdir_if_not_exists(destination_dir)
+    source = f'{source_dir}/{filename}'
+    destination = f'{destination_dir}/{filename}'
+    if destination.endswith(('.zip', '.tar', '.xz', '.rar', '.gz')):
+        GlobalStateHolder.files_to_rename[destination + '.txt'] = destination
+        destination += '.txt'
+        print(f'File "{source}" will be uploaded to "{destination}" and renamed in next step')
+
     GlobalStateHolder.uploader = YandexDiskUploaderOverwrite(wrapper,
-                                                             f'{source_dir}/{filename}',
-                                                             f'{destination_dir}/{filename}')
+                                                             source,
+                                                             destination)
 
     GlobalStateHolder.uploader.upload()
 
@@ -161,3 +170,10 @@ def compare_files_with_destination() -> List[Dict[str, Any]]:
                   f'{file["destination_size"]: <16}')
 
     return collisions
+
+
+def rename_all_files():
+    for source in GlobalStateHolder.files_to_rename:
+        destination = GlobalStateHolder.files_to_rename[source]
+        GlobalStateHolder.disk_wrapper.yadisk.move(source,
+                                                   destination)
