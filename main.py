@@ -1,4 +1,4 @@
-#
+import os
 import threading
 
 from src.cli import get_sys_arguments, GlobalStateHolder, get_files_to_upload, initialize_wrapper, \
@@ -35,8 +35,10 @@ if __name__ == '__main__':
     elif not comparison:
         print('No conflict files, OK')
 
+    print(f'\nAll files from "{os.path.abspath(GlobalStateHolder.source_dir)}" '
+          f'will be uploaded to "{GlobalStateHolder.destination_dir}"')
     if not args.force:
-        print('\nPress ENTER to continue:')
+        print('Press ENTER to continue:')
         input()
 
     uploading_threads()
