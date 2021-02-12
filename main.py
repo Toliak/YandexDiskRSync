@@ -5,9 +5,9 @@ from src.cli import get_sys_arguments, GlobalStateHolder, get_files_to_upload, i
     compare_files_with_destination, get_progress, upload_all_files, rename_all_files
 
 
-def uploading_threads():
+def uploading_threads(uploader_cls):
     progress = threading.Thread(target=get_progress)
-    upload = threading.Thread(target=upload_all_files)
+    upload = threading.Thread(target=lambda: upload_all_files(uploader_cls))
 
     progress.start()
     upload.start()
@@ -41,7 +41,7 @@ if __name__ == '__main__':
         print('Press ENTER to continue:')
         input()
 
-    uploading_threads()
+    uploading_threads(args.uploader_cls)
     print('Uploading complete')
 
     print('Renaming archives...')

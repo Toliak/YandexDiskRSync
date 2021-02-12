@@ -5,7 +5,8 @@ from typing import Optional, List, Any, Dict
 
 from yadisk.exceptions import PathNotFoundError
 
-from src.disk_wrapper import YandexDiskUploaderAbstract, YandexDiskWrapper, YandexDiskUploaderOverwrite
+from src.disk_wrapper import YandexDiskUploaderAbstract, YandexDiskWrapper, YandexDiskUploaderOverwrite, \
+    YandexDiskUploaderSkipExisting
 from src.utils import get_file_size
 
 
@@ -58,6 +59,13 @@ def get_sys_arguments() -> argparse.Namespace:
                         default=False,
                         type=bool,
                         help='Throw an error, if at least one of files already exists in YandexDisk')
+    parser.add_argument('--skip-existing',
+                        nargs='?',
+                        dest='uploader_cls',
+                        const=YandexDiskUploaderSkipExisting,
+                        default=YandexDiskUploaderOverwrite,
+                        type=bool,
+                        help='Skip existing on yandex disk files')
 
     args: argparse.Namespace = parser.parse_args()
 
@@ -69,7 +77,7 @@ def get_files_to_upload() -> List[str]:
 
     all_files = []
     for root, dirs, files in os.walk(source_dir, followlinks=True):
-        root_from_source = root[len(source_dir)+1:]
+        root_from_source = root[len(source_dir) + 1:]
         all_files.extend([os.path.join(root_from_source, filename) for filename in files])
 
     return all_files
@@ -114,7 +122,7 @@ def get_progress():
         time.sleep(1.5)
 
 
-def upload_file(filename: str):
+def upload_file(filename: str, uploader_cls):
     wrapper = GlobalStateHolder.disk_wrapper
     source_dir = GlobalStateHolder.source_dir
     destination_dir = GlobalStateHolder.destination_dir
@@ -127,17 +135,17 @@ def upload_file(filename: str):
         destination += '.txt'
         print(f'File "{source}" will be uploaded to "{destination}" and renamed in next step')
 
-    GlobalStateHolder.uploader = YandexDiskUploaderOverwrite(wrapper,
-                                                             source,
-                                                             destination)
+    GlobalStateHolder.uploader = uploader_cls(wrapper,
+                                              source,
+                                              destination)
 
     GlobalStateHolder.uploader.upload()
 
 
-def upload_all_files():
+def upload_all_files(uploader_cls):
     for file in GlobalStateHolder.files_to_upload:
         print(f'Uploading: {file}')
-        upload_file(file)
+        upload_file(file, uploader_cls)
 
         GlobalStateHolder.uploaded += 1
         print(f'Uploaded:  {file}')

@@ -4,7 +4,6 @@ from yadisk import YaDisk
 from yadisk.exceptions import PathNotFoundError
 from yadisk.objects import ResourceObject
 
-from src.utils import get_file_size
 from src.yandex_disk_upload import prepare_file_adapter
 
 
@@ -44,14 +43,29 @@ class YandexDiskUploaderAbstract(metaclass=abc.ABCMeta):
 
 class YandexDiskUploaderOverwrite(YandexDiskUploaderAbstract):
     def upload(self):
-        self.yadisk.upload(prepare_file_adapter(self.source_path, self.percent_callback),
+        self.yadisk.upload(prepare_file_adapter(self.source_path,
+                                                self.percent_callback),
                            self.dist_path,
                            overwrite=True)
 
 
 class YandexDiskUploaderWithError(YandexDiskUploaderAbstract):
     def upload(self):
-        self.yadisk.upload(prepare_file_adapter(self.source_path, self.percent_callback),
+        self.yadisk.upload(prepare_file_adapter(self.source_path,
+                                                self.percent_callback),
+                           self.dist_path)
+
+
+class YandexDiskUploaderSkipExisting(YandexDiskUploaderAbstract):
+    def upload(self):
+        try:
+            self.wrapper.get_size(self.dist_path)
+            return
+        except PathNotFoundError:
+            pass
+
+        self.yadisk.upload(prepare_file_adapter(self.source_path,
+                                                self.percent_callback),
                            self.dist_path)
 
 
