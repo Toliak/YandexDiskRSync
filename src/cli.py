@@ -1,7 +1,6 @@
 import argparse
+import os
 import time
-from os import listdir
-from os.path import isfile, join
 from typing import Optional, List, Any, Dict
 
 from yadisk.exceptions import PathNotFoundError
@@ -65,11 +64,15 @@ def get_sys_arguments() -> argparse.Namespace:
     return args
 
 
-def get_files_to_upload():
+def get_files_to_upload() -> List[str]:
     source_dir = GlobalStateHolder.source_dir
-    return [f
-            for f in listdir(source_dir)
-            if isfile(join(source_dir, f))]
+
+    all_files = []
+    for root, dirs, files in os.walk(source_dir, followlinks=True):
+        root_from_source = root[len(source_dir)+1:]
+        all_files.extend([os.path.join(root_from_source, filename) for filename in files])
+
+    return all_files
 
 
 def initialize_wrapper(token: str):
