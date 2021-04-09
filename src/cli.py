@@ -171,13 +171,13 @@ def compare_files_with_destination() -> List[Dict[str, Any]]:
 
     if collisions:
         print('\nConflict files:')
-        print(f'{"Source": ^36} | {"Size": ^16} || {"Destination": ^36} | {"Size": ^16}')
-        print(f'{"-" * 36} | {"-" * 16} || {"-" * 36} | {"-" * 16}')
+        print(f'{"Source": ^70} | {"Size": ^16} || {"Destination": ^70} | {"Size": ^16}')
+        print(f'{"-" * 70} | {"-" * 16} || {"-" * 36} | {"-" * 16}')
 
         for file in collisions:
-            print(f'{file["source_file"]: <36} | '
+            print(f'{file["source_file"]: <70} | '
                   f'{file["source_size"]: <16} || '
-                  f'{file["destination_file"]: <36} | '
+                  f'{file["destination_file"]: <70} | '
                   f'{file["destination_size"]: <16}')
 
     return collisions
