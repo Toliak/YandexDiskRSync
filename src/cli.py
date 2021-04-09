@@ -1,7 +1,7 @@
 import argparse
 import os
 import time
-from typing import Optional, List, Any, Dict
+from typing import Optional, List, Any, Dict, Set
 
 from yadisk.exceptions import PathNotFoundError
 
@@ -17,6 +17,7 @@ class GlobalStateHolder:
     files_to_upload_len = 0
 
     files_to_rename: Dict[str, str] = dict()
+    exists_same: Set[str] = set()
 
     uploader: Optional[YandexDiskUploaderAbstract] = None
     disk_wrapper: Optional[YandexDiskWrapper] = None
@@ -129,7 +130,14 @@ def upload_file(filename: str, uploader_cls):
 
     wrapper.mkdir_if_not_exists(destination_dir)
     source = f'{source_dir}/{filename}'
-    destination = f'{destination_dir}/{filename}'
+    origin_destination = f'{destination_dir}/{filename}'
+    destination = origin_destination
+
+    # File sizes equals => no changes
+    if source in GlobalStateHolder.exists_same:
+        print(f'File "{source}" already exists wil the same size. Skipped')
+        return
+
     if destination.endswith(('.zip', '.tar', '.xz', '.rar', '.gz')):
         GlobalStateHolder.files_to_rename[destination + '.txt'] = destination
         destination += '.txt'
@@ -164,15 +172,19 @@ def compare_files_with_destination() -> List[Dict[str, Any]]:
         except PathNotFoundError:
             continue
 
+        source_size = get_file_size(source_file)
         collisions.append(dict(source_file=source_file,
                                destination_file=destination_file,
-                               source_size=get_file_size(source_file),
+                               source_size=source_size,
                                destination_size=size, ))
+        if source_size == size:
+            # Do not upload files with the same size
+            GlobalStateHolder.exists_same.add(source_file)
 
     if collisions:
         print('\nConflict files:')
         print(f'{"Source": ^70} | {"Size": ^16} || {"Destination": ^70} | {"Size": ^16}')
-        print(f'{"-" * 70} | {"-" * 16} || {"-" * 36} | {"-" * 16}')
+        print(f'{"-" * 70} | {"-" * 16} || {"-" * 70} | {"-" * 16}')
 
         for file in collisions:
             print(f'{file["source_file"]: <70} | '
