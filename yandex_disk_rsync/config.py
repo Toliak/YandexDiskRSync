@@ -9,7 +9,11 @@ from yandex_disk_rsync.log import logger
 from yandex_disk_rsync.utils import open_text_read
 
 
-def _get_config_unused_fields(content: dict) -> List[str]:
+def _get_config_unused_fields(content):
+    """
+    :type content: dict
+    :rtype: list[str]
+    """
     default_keys = set(ydcmd.yd_default_config().keys())
     content_keys = set(content.keys())
 
@@ -17,7 +21,11 @@ def _get_config_unused_fields(content: dict) -> List[str]:
     return list(wrong_keys)
 
 
-def _deserialize_dict(content: dict) -> ydcmd.ydOptions:
+def _deserialize_dict(content):
+    """
+    :type content: dict
+    :rtype: ydcmd.ydOptions
+    """
     cfg = ydcmd.yd_default_config().copy()
     for key in content:
         cfg[key] = content[key]
@@ -27,7 +35,11 @@ def _deserialize_dict(content: dict) -> ydcmd.ydOptions:
     return options
 
 
-def deserialize_yaml(file_path: Path | str) -> ydcmd.ydOptions:
+def deserialize_yaml(file_path):
+    """
+    :type file_path: Path | str
+    :rtype: ydcmd.ydOptions
+    """
     with open_text_read(file_path) as file:
         dict_content = yaml.safe_load(file)
 
@@ -38,7 +50,10 @@ def deserialize_yaml(file_path: Path | str) -> ydcmd.ydOptions:
     return options
 
 
-def default_config_paths() -> List[Path]:
+def default_config_paths():
+    """
+    :rtype: list[Path]
+    """
     return [
         Path('./yandex_disk_rsync.yaml'),
         Path('./.yandex_disk_rsync.yaml'),
@@ -46,7 +61,11 @@ def default_config_paths() -> List[Path]:
     ]
 
 
-def get_available_config_path(args_path: Path | None) -> Path:
+def get_available_config_path(args_path):
+    """
+    :type args_path: Path | None
+    :rtype: Path
+    """
     if args_path:
         args_path = args_path.resolve()
         if args_path.exists():

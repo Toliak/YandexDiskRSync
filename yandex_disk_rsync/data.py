@@ -121,7 +121,7 @@ def local_listdir(options, local_path: Path, relative_path: str = ''):
         else local_path
 
     for path in os.listdir(complete_path):
-        new_complete_path = complete_path / path
+        new_complete_path = complete_path / str(path)
         new_relative_path = f'{relative_path}/{path}' if relative_path else path
         if os.path.isfile(new_complete_path):
             yield FileBriefData(
@@ -143,7 +143,10 @@ def local_listdir(options, local_path: Path, relative_path: str = ''):
         logger.error(f"Unknown file type: {new_complete_path}")
 
 
-def yd_exists(options, remote_path: Path | str):
+def yd_exists(options, remote_path):
+    """
+    :type remote_path: Path | str
+    """
     remote_path_str = Path(remote_path).as_posix()
 
     try:
@@ -154,7 +157,10 @@ def yd_exists(options, remote_path: Path | str):
         return True
 
 
-def yd_mkdir_recursive(options, remote_path: Path | str):
+def yd_mkdir_recursive(options, remote_path):
+    """
+    :type remote_path: Path | str
+    """
     to_create: List[str] = []
     to_check: List[Path] = [
         Path(remote_path),

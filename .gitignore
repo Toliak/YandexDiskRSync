@@ -2,7 +2,7 @@
 .vs
 upload
 
-venv
+venv*
 
 local.*
 __pycache__

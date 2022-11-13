@@ -29,9 +29,11 @@ def human_readable_size(size: int) -> str:
     return ydcmd.yd_human(size)
 
 
-def file_md5(fname: str | Path):
+def file_md5(fname):
     """
     https://stackoverflow.com/a/3431838/14142236
+
+    :type fname: str | Path
     """
     buffer_size = 4096 * 4
     hash_md5 = hashlib.md5()
@@ -51,7 +53,10 @@ def ask_to_continue() -> None:
         raise RuntimeError("Aborted")
 
 
-def mkdir_p_from_file(path: Path | str):
+def mkdir_p_from_file(path):
+    """
+    :type path: Path | str
+    """
     path = Path(path).resolve()
     while path.is_file():
         path = path.parent

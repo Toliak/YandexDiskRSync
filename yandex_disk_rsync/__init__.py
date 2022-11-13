@@ -3,7 +3,7 @@ import dataclasses
 import enum
 import os
 from pathlib import Path
-from typing import List, Callable, Dict
+from typing import List, Callable, Dict, Optional
 
 from yandex_disk_rsync.config import get_available_config_path, deserialize_yaml
 from yandex_disk_rsync.data import YdInfo, \
@@ -23,7 +23,7 @@ class ArgsTarget(enum.Enum):
 
 @dataclasses.dataclass
 class Args:
-    config: Path | None
+    config: Optional[Path]
     local_path: Path
     yd_path: Path
     target: ArgsTarget
