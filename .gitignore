@@ -1,4 +1,13 @@
 .idea
-venv
+.vs
 upload
+
+venv*
+
 local.*
+__pycache__
+*.egg-info
+*.pyc
+build
+dist
+.pytest_cache
