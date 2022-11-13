@@ -6,7 +6,11 @@ from pathlib import Path
 from typing import List, Callable, Dict
 
 from yandex_disk_rsync.config import get_available_config_path, deserialize_yaml
-from yandex_disk_rsync.data import YdInfo, yd_listdir, local_listdir, FileBriefData
+from yandex_disk_rsync.data import YdInfo, \
+    yd_listdir, \
+    local_listdir, \
+    FileBriefData, \
+    yd_mkdir_recursive
 from yandex_disk_rsync.log import logger
 from yandex_disk_rsync.utils import runtime_path, ask_to_continue, mkdir_p_from_file
 from yandex_disk_rsync import ydcmd
@@ -190,6 +194,10 @@ def apply_sync(
         if data.type in {SyncType.Add, SyncType.Change}:
             disk_url = f'{remote_root_path}/{data.relative_path}'
             local_path = local_root_path / data.relative_path
+
+            disk_url_path = Path(disk_url)
+            if len(disk_url_path.parents) - 1 > 0:
+                yd_mkdir_recursive(options, disk_url_path.parent)
 
             logger.info(f"Copy from {local_path} to disk:{disk_url}")
             ydcmd.yd_put(

@@ -2,7 +2,7 @@ import dataclasses
 import datetime
 import os
 from pathlib import Path
-from typing import Dict, Generator
+from typing import Dict, Generator, List
 
 from yandex_disk_rsync import ydcmd
 from yandex_disk_rsync.log import logger
@@ -141,3 +141,35 @@ def local_listdir(options, local_path: Path, relative_path: str = ''):
             continue
 
         logger.error(f"Unknown file type: {new_complete_path}")
+
+
+def yd_exists(options, remote_path: Path | str):
+    remote_path_str = Path(remote_path).as_posix()
+
+    try:
+        ydcmd.yd_list(options, remote_path_str)
+    except ydcmd.ydError as _:
+        return False
+    else:
+        return True
+
+
+def yd_mkdir_recursive(options, remote_path: Path | str):
+    to_create: List[str] = []
+    to_check: List[Path] = [
+        Path(remote_path),
+        *Path(remote_path).parents[:-1]
+    ]
+
+    for path in to_check:
+        if yd_exists(options, path.as_posix()):
+            break
+        to_create.append(path.as_posix())
+
+    logger.info(f"For '{remote_path}' {len(to_create)} "
+                f"directories will be created")
+    for path in to_create:
+        logger.debug(f"- {path}")
+
+    for path_str in reversed(to_create):
+        ydcmd.yd_create(options, path_str)
