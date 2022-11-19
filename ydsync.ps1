@@ -6,7 +6,7 @@ Write-Verbose "Script Root: $PSScriptRoot"
 $OldPythonPath = $env:PYTHONPATH
 $env:PYTHONPATH = "$PSScriptRoot"
 
-python "$PSScriptRoot\yandex_disk_rsync" $args
+& python "$PSScriptRoot\yandex_disk_rsync" @args
 
 $env:PYTHONPATH = $OldPythonPath
 deactivate
