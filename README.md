@@ -82,7 +82,7 @@ deactivate
 New-Item -Type File -ErrorAction Ignore $PROFILE
 Add-Content $PROFILE "function ydsync() { $PWD\ydsync.ps1 `@args }`n"
 
-# 4. Test the app
+# 4. Restart powershell and test the app
 ydsync -h
 ```
 
