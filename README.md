@@ -64,7 +64,27 @@ ydsync -h
 
 ## Windows
 
-In Progress
+```powershell
+# 1. Clone the repository
+New-Item -Type Directory -ErrorAction Ignore $HOME\AppData\Local\Programs
+Set-Location $HOME\AppData\Local\Programs
+git clone https://github.com/Toliak/YandexDiskRSync
+Set-Location ./YandexDiskRSync
+
+# 2. Initialize venv and install requirements
+python -m venv venv
+& .\venv\Scripts\Activate.ps1
+pip install -r .\requirements.txt
+python setup.py build
+deactivate
+
+# 3. Add startup script
+New-Item -Type File -ErrorAction Ignore $PROFILE
+Add-Content $PROFILE "function ydsync() { $PWD\ydsync.ps1 `$args }`n"
+
+# 4. Test the app
+ydsync -h
+```
 
 # Configuration
 
