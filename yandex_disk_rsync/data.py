@@ -164,7 +164,7 @@ def yd_mkdir_recursive(options, remote_path):
     to_create: List[str] = []
     to_check: List[Path] = [
         Path(remote_path),
-        *Path(remote_path).parents[:-1]
+        *list(Path(remote_path).parents)[:-1]
     ]
 
     for path in to_check:
