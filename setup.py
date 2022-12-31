@@ -58,7 +58,7 @@ __pre_install()
 
 setuptools.setup(
     name='YandexDisk RSync',
-    version='0.1',
+    version='0.2',
     description='YDCMD wrapper with some misc improvements',
     author='Anatolii Titov',
     author_email='a@toliak.ru',
