@@ -24,17 +24,20 @@ class ArgsTarget(enum.Enum):
 @dataclasses.dataclass
 class Args:
     config: Optional[Path]
-    local_path: Path
-    yd_path: Path
     target: ArgsTarget
     delete: bool
+    local_path: Optional[Path] = None
+    yd_path: Optional[Path] = None
 
     def __init__(self, args):
         self.config = runtime_path() / args.config if args.config else None
-        self.local_path = runtime_path() / args.local_path
-        self.yd_path = runtime_path() / args.yd_path
         self.target = ArgsTarget(args.target)
         self.delete = args.delete
+
+        if args.local_path:
+            self.local_path = runtime_path() / args.local_path
+        if args.yd_path:
+            self.yd_path = runtime_path() / args.yd_path
 
     def __str__(self):
         return f'''Config path : {str(self.config)}
@@ -57,24 +60,25 @@ def __arg_parser() -> argparse.ArgumentParser:
         '--local-path',
         '-l',
         type=str,
-        required=True,
+        required=False,
+        default=None,
         dest='local_path',
     )
     parser.add_argument(
         '--yd-path',
         '-d',
         type=str,
-        required=True,
+        required=False,
+        default=None,
         dest='yd_path',
     )
     parser.add_argument(
         '--target',
         '-t',
-        help='Target (editable)',
+        help='Target, the synchronization destination (editable)',
         type=str,
-        required=False,
+        required=True,
         choices=['disk', 'local'],
-        default='local',
         dest='target',
     )
     parser.add_argument(
@@ -156,7 +160,7 @@ def compare_before_sync(
 
 
 def apply_sync(
-        options,
+        options: config.Config,
         local_sync_list: List[SyncData],
         remote_sync_list: List[SyncData],
         local_root_path: Path,
@@ -173,7 +177,7 @@ def apply_sync(
 
             logger.info(f"Copy from {disk_url} to {local_path}")
             ydcmd.yd_get(
-                options,
+                options.ydcmd,
                 disk_url,
                 str(local_path),
             )
@@ -197,11 +201,11 @@ def apply_sync(
 
             disk_url_path = Path(disk_url)
             if len(disk_url_path.parents) - 1 > 0:
-                yd_mkdir_recursive(options, disk_url_path.parent)
+                yd_mkdir_recursive(options.ydcmd, disk_url_path.parent)
 
             logger.info(f"Copy from {local_path} to disk:{disk_url}")
             ydcmd.yd_put(
-                options,
+                options.ydcmd,
                 str(local_path),
                 disk_url
             )
@@ -212,7 +216,7 @@ def apply_sync(
             logger.warning(f"Removing disk:{disk_url}")
 
             ask_to_continue()
-            ydcmd.yd_delete(options, disk_url)
+            ydcmd.yd_delete(options.ydcmd, disk_url)
             continue
 
         logger.error(f"Unknown SyncData type: {data.type}")
@@ -229,31 +233,56 @@ def main(args: Args):
     logger.info(args)
 
     options = deserialize_yaml(get_available_config_path(args.config))
-    if not options.token:
-        logger.warning(f'No token provided')
+    if not options.ydcmd.token:
+        logger.error(f'No token provided')
 
-    info = YdInfo.deserialize(ydcmd.yd_info(options))
+    info = YdInfo.deserialize(ydcmd.yd_info(options.ydcmd))
     logger.info("YaDisk info:")
     logger.info(info)
 
-    if not args.local_path.exists():
-        os.mkdir(args.local_path)
+    if args.local_path:
+        local_path = args.local_path
+    elif options.sync.local_path:
+        local_path = options.sync.local_path
+    else:
+        local_path = None
+        logger.error(
+            'Unspecified local_path. '
+            'Use arguments or the configuration'
+        )
 
-    if not args.local_path.is_dir():
-        raise RuntimeError(f"{args.local_path} is not a directory")
+    if args.yd_path:
+        yd_path = args.yd_path
+    elif options.sync.yd_path:
+        yd_path = options.sync.yd_path
+    else:
+        yd_path = None
+        logger.error(
+            'Unspecified yd_path. '
+            'Use arguments or the configuration'
+        )
+
+    if not local_path or not yd_path:
+        raise RuntimeError("Misconfigured")
+
+    if not local_path.exists():
+        os.mkdir(local_path)
+
+    if not local_path.is_dir():
+        raise RuntimeError(f"{local_path} is not a directory")
 
     # collect local hashsums
     local_stats = {
         entry.path: entry
-        for entry in local_listdir(options, args.local_path)
+        for entry in local_listdir(options.ydcmd, local_path)
     }
     logger.info(f"Collected {len(local_stats)} local files")
 
     # collect remote hashsums
-    disk_root_path = args.yd_path.as_posix()
+    disk_root_path = yd_path.as_posix()
     remote_stats = {
         entry.path: entry
-        for entry in yd_listdir(options, disk_root_path)
+        for entry in yd_listdir(options.ydcmd, disk_root_path)
     }
     logger.info(f"Collected {len(remote_stats)} remote files")
 
@@ -289,6 +318,6 @@ def main(args: Args):
         options,
         not_in_local,
         not_in_remote,
-        args.local_path,
+        local_path,
         disk_root_path
     )

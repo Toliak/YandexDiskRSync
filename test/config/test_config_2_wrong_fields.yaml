@@ -1,2 +1,5 @@
-token: MY_TOKEN
-this_field_does_not_exists: [ 1,2 ]
+ydcmd:
+  token: MY_TOKEN
+  this_field_does_not_exists: [ 1,2 ]
+
+another_unexisting_field: 'test'

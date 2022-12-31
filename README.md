@@ -101,11 +101,17 @@ Token creation guide described
 [here](https://yandex.ru/dev/direct/doc/start/token.html#token__token_how_get).
 
 ```yaml
-token: __YOUR_TOKEN_HERE__
-verbose: true
-debug: true
-retries: 2
-progress: true
+ydcmd:
+    token: __YOUR_TOKEN_HERE__
+    verbose: true
+    debug: true
+    retries: 2
+    progress: true
+
+sync:
+    local_path: __CAN_BE_DEFINED_HERE_OR_IN_ARGUMENTS__
+    yd_path: __CAN_BE_DEFINED_HERE_OR_IN_ARGUMENTS__
+    delete: __CAN_BE_DEFINED_HERE_OR_IN_ARGUMENTS__
 ```
 
 Full configuration description located at the
@@ -116,8 +122,8 @@ Default configuration described in the [source code](https://github.com/abbat/yd
 # Usage
 
 ```text
-usage: yandex_disk_rsync [-h] [--config CONFIG] --local-path LOCAL_PATH
-                         --yd-path YD_PATH [--target {disk,local}] [--delete]
+usage: yandex_disk_rsync [-h] [--config CONFIG] [--local-path LOCAL_PATH]
+                         [--yd-path YD_PATH] --target {disk,local} [--delete]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -125,7 +131,7 @@ optional arguments:
   --local-path LOCAL_PATH, -l LOCAL_PATH
   --yd-path YD_PATH, -d YD_PATH
   --target {disk,local}, -t {disk,local}
-                        Target (editable)
+                        Target, the synchronization destination (editable)
   --delete              Can delete files
 ```
 
@@ -139,7 +145,7 @@ If the local is chosen, the files synchronized from disk into local.
 | File checksum mismatch | Download from disk   | Upload to disk      |
 | Same file              | No changes           | No changes          |
 
-`*` works only if `delete` argument has been passed.
+`*` works only if `delete` argument has been passed or is True.
 
 After preparing changes summary,
 the app will print them and ask a user for confirmation.

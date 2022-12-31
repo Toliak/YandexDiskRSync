@@ -21,9 +21,9 @@ def config_2_wrong_fields():
 
 def test_deserialize_yaml_correct(config_1_correct):
     options = ydr_config.deserialize_yaml(config_1_correct)
-    assert options.token == 'MY_TOKEN'
+    assert options.ydcmd.token == 'MY_TOKEN'
 
-    unused = ydr_config._get_config_unused_fields(
+    unused = ydr_config.Config.get_unused_keys(
         yaml.safe_load(file_text_read(config_1_correct)),
     )
     assert unused == []
@@ -31,9 +31,12 @@ def test_deserialize_yaml_correct(config_1_correct):
 
 def test_deserialize_yaml_has_unused_fields(config_2_wrong_fields):
     options = deserialize_yaml(config_2_wrong_fields)
-    assert options.token == 'MY_TOKEN'
+    assert options.ydcmd.token == 'MY_TOKEN'
 
-    unused = ydr_config._get_config_unused_fields(
+    unused = ydr_config.Config.get_unused_keys(
         yaml.safe_load(file_text_read(config_2_wrong_fields)),
     )
-    assert set(unused) == {'this_field_does_not_exists'}
+    assert set(unused) == {
+        'ydcmd.this_field_does_not_exists',
+        'another_unexisting_field'
+    }
