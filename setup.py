@@ -15,7 +15,17 @@ def __project_directory():
 
 
 def __pre_install():
-    ydcmd_url = 'https://raw.githubusercontent.com/abbat/ydcmd/master/ydcmd.py'
+    ydcmd_host = 'raw.githubusercontent.com'
+    slug = 'abbat/ydcmd'
+    file = 'ydcmd.py'
+    ydcmd_commit_hash = '96e5700e3d8adf143d51fa6e7e40f88da890078e'
+
+    ydcmd_url = 'https://%s/%s/%s/%s' % (
+        ydcmd_host,
+        slug,
+        ydcmd_commit_hash,
+        file,
+    )
 
     with open(
             os.path.join(__project_directory(), 'ydcmd.py'),
