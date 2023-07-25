@@ -40,7 +40,7 @@ ydsync -h
 
 ```bash
 # 1. Clone the repository
-cd /usr/share/
+cd $HOME/.local/share/
 git clone https://github.com/Toliak/YandexDiskRSync
 cd YandexDiskRSync
 
@@ -52,11 +52,11 @@ python setup.py build
 deactivate
 
 # 3. Add startup script
-cat > /usr/local/bin/ydsync <<EOF
+cat > $HOME/.local/bin/ydsync <<EOF
 #! /bin/sh
-exec /usr/share/YandexDiskRSync/ydsync "\$@"
+exec $HOME/.local/share/YandexDiskRSync/ydsync "\$@"
 EOF
-chmod 755 /usr/local/bin/ydsync
+chmod 755 $HOME/.local/bin/ydsync
 
 # 4. Test the app
 ydsync -h
@@ -99,6 +99,8 @@ Configuration file `yandex_disk_rsync.yaml` possible locations:
 Required configuration field is `token`.
 Token creation guide described
 [here](https://yandex.ru/dev/direct/doc/start/token.html#token__token_how_get).
+
+Example:
 
 ```yaml
 ydcmd:
